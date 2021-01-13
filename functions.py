@@ -84,7 +84,7 @@ def reduce_ndc(df, ndc_df):
     return df
 
 def select_features(agg_df, cat_col_list, num_col_list, TARGET, 
-                          grouping_key='patient_nbr'):
+                          grouping_key='encounter_id'):
     selected_col_list = [grouping_key] + [TARGET] + cat_col_list + num_col_list 
                                 
     return agg_df[selected_col_list]
@@ -161,18 +161,20 @@ def demo_plots(df, predictor):
     print(df.groupby(predictor).size().plot(kind='barh'))
 
 # referenced from https://www.tensorflow.org/tutorials/structured_data/feature_columns
-def df_to_dataset(df, predictor, batch_size=32):
+def df_to_dataset(df, predictor, **kwargs):
     """
     This function takes in a Pandas dataframe, predictor column and batch size.
     It converts the dataframe into Tensorflow datasets.
     Returns TF dataset.
     """
-    df = df.copy()
-    labels = df.pop(predictor)
-    ds = tf.data.Dataset.from_tensor_slices((dict(df), labels))
-    ds = ds.shuffle(buffer_size=len(df))
-    ds = ds.batch(batch_size)
-    return ds
+    y = df[predictor].copy()
+    X = df.drop([predictor], axis=1).copy()
+#     df = df.copy()
+#     labels = df.pop(predictor)
+#     ds = tf.data.Dataset.from_tensor_slices((dict(df), labels))
+#     ds = ds.shuffle(buffer_size=len(df))
+#     ds = ds.batch(batch_size)
+    return X, y
 
 def show_transformations(feature_column, example_batch):
     """

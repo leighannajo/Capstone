@@ -2,6 +2,6 @@
 Caucasian
 AfricanAmerican
 ?
-Hispanic
 Other
+Hispanic
 Asian
