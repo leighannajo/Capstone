@@ -4,9 +4,18 @@ import os
 import tensorflow as tf
 import tensorflow_probability as tfp
 import functools
+from sklearn import decomposition
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
+
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import recall_score, f1_score, accuracy_score, roc_curve
+from sklearn.metrics import precision_score, make_scorer, roc_auc_score
 
 import warnings
 warnings.filterwarnings('ignore')
+
 
 def test_level(df, encounter='encounter_id', patient='patient_nbr'):
     if len(df) > df['encounter_id'].nunique():
@@ -17,6 +26,21 @@ def test_level(df, encounter='encounter_id', patient='patient_nbr'):
         print("Dataset could be at the longitudinal level")
     else:
         print('You did not provide the correct information!')
+        
+def plot_PCA_2D(data, target, target_labels, y_colors):
+
+    pca = decomposition.PCA(n_components=2)
+    pca.fit(data)
+    pcafeatures = pca.transform(data)
+    
+    for i, label in enumerate(target_labels):
+        plt.scatter(pcafeatures[target == i, 0], pcafeatures[target == i, 1],
+                  c=y_colors[i], label=label, alpha=.3, edgecolors="none")
+
+    xlabel("1st pricinple component")
+    ylabel("2nd pricinple component")
+    plt.legend()
+    plt.show()
 
 def missing_data(df):
     """ This function takes in a dataframe, calculates
@@ -159,199 +183,77 @@ def demo_plots(df, predictor):
     """
     print(df.groupby(predictor).size())
     print(df.groupby(predictor).size().plot(kind='barh'))
+    
+def model_test(model, X_train, y_train, X_test, y_test):
+   # fit model on training data
+    model.fit(X_train, y_train)
+    
+    # get model predictions and score on test set
+    predictions = model.predict(X_test)
+    score = model.score(X_test, y_test)
+    return predictions, score
+
+def get_model_performance(predictions, color, X_test, y_test,
+                target_names = ['Not Readmitted', 'Readmitted']):
+    cfm = confusion_matrix(y_test, predictions, normalize='true')
+    clr = classification_report(y_test, predictions, target_names=target_names) 
+#                     target_names = ['Not Readmitted', '< 30 days',  '> 30 days']
+#                                 target_names = ['Not Readmitted', 'Readmitted']
+                            
+                                           
+    true_negative = cfm[0][0]
+    false_positive = cfm[0][1]
+    false_negative = cfm[1][0]
+    true_positive = cfm[1][1]
+
+    precision = precision_score(y_test, predictions, average='macro')
+    recall = recall_score(y_test, predictions, average='macro')
+    f1 = f1_score(y_test, predictions, average='macro')
+    accuracy = accuracy_score(y_test, predictions)
+    
+    print(f'Confusion Matrix: \n', cfm, '\n')
+    print(f'Classification Report: \n', clr, '\n')
+    
+    print(f'True Negative: {true_negative}')
+    print(f'False Positive: {false_positive}')
+    print(f'False Negative: {false_negative}')
+    print(f'True Positive: {true_positive}', '\n')
+    
+    print (f'Precision score: {precision}')
+    print (f'Recall score: {recall}')
+    print (f'F1 score : {f1}')
+    print (f'Accuracy score: {accuracy}')
+    
+    plt.figure(figsize=(13,8))
+    sns.heatmap(cfm, 
+            annot=True, fmt=".3f", linewidths=.5, square = True, 
+                cmap = color);
+    plt.ylabel('Actual label');
+    plt.xlabel('Predicted label');
+    all_sample_title = (f'Recall Score: {recall}')
+    plt.title(all_sample_title, size = 15);
+    
+def get_important_feats(model, X_train):
+    feature_importance = model.feature_importances_
+    feat_importances = pd.Series(model.feature_importances_, 
+                                 index=X_train.columns)
+    feat_importances = feat_importances.nlargest(19)
+    feat_importances.plot(kind='barh' , figsize=(10,10)) 
+    plt.show()
+    
 
 # referenced from https://www.tensorflow.org/tutorials/structured_data/feature_columns
 def df_to_dataset(df, predictor, **kwargs):
     """
-    This function takes in a Pandas dataframe, predictor column and batch size.
-    It converts the dataframe into Tensorflow datasets.
+    
     Returns TF dataset.
     """
     y = df[predictor].copy()
     X = df.drop([predictor], axis=1).copy()
-#     df = df.copy()
-#     labels = df.pop(predictor)
-#     ds = tf.data.Dataset.from_tensor_slices((dict(df), labels))
-#     ds = ds.shuffle(buffer_size=len(df))
-#     ds = ds.batch(batch_size)
+
     return X, y
 
-def show_transformations(feature_column, example_batch):
-    """
-    This function takes in a Tensorflow feature and sample batch from
-    the original Tensorflow training dataset.
-    It returns the feature layer transformations 
-    from the sample batch.
-    """
-    feature_layer = tf.keras.layers.DenseFeatures(feature_column)
-    print(feature_layer(example_batch))
-    return feature_layer(example_batch)
-   
-# Categorical Feature Columns:    
-def write_vocab_list(vocab_list, column, default_value, 
-                vocab_dir='./diabetes_vocab/'): 
-    """ 
-    This function writes and returns the vocab directory 
-    path for the vocab building function.
-    """
-    output_file_path = os.path.join(vocab_dir, str(column) + "_vocab.txt")
-    # put default value in first row 
-    vocab_list = np.insert(vocab_list, 0, default_value, axis=0) 
-    df = pd.DataFrame(vocab_list).to_csv(output_file_path, index=None, 
-                                         header=None)
-    return output_file_path
 
 
-def build_vocab_list(df, categorical_cols, default_value='00'):
-    """
-     This function takes in the Pandas training dataframe and a list of its 
-     categorical columns. 
-     It returns a list of the vocab file path for the categorical features.
-     """
-    vocab_files = []
-    for cat in categorical_cols:
-        v_file = write_vocab_list(df[cat].unique(), cat, default_value)
-        vocab_files.append(v_file)
-    return vocab_files
 
-
-def create_tf_cat_feature(categorical_cols,
-                              vocab_dir='./diabetes_vocab/'):
-    '''
-    This function takes in a list of categorical features to be 
-    transformed with TF feature column API and the path where the vocabulary 
-    text files are located.
-    TF reads from the text files and creates the categorical features.
-    It returns the list of transformed TF feature columns.
-    '''
-    tf_cat_list = []
-    for cat in categorical_cols:
-        vocab_file_path = os.path.join(vocab_dir,  cat + "_vocab.txt")
-
-        tf_cat_feature = tf.feature_column.categorical_column_with_vocabulary_file(key=cat, 
-                            vocabulary_file = vocab_file_path, num_oov_buckets=1)
-        tf_cat_feature = tf.feature_column.indicator_column(tf_cat_feature)
-        tf_cat_list.append(tf_cat_feature)
-    return tf_cat_list
-
-# Numerical Feature Columns:
-def normalize_numericals(col, mean, std):
-    '''
-    This function takes in a column and returns the 
-    normalized column.
-    '''
-    return (col - mean)/std
-
-def create_tf_numerical_feats(col, MEAN, STD, default_value=0):
-    '''
-    col: string, input numerical column name
-    MEAN: the mean for the column in the training data
-    STD: the standard deviation for the column in the training data
-    default_value: the value that will be used for imputing the field
-
-    return:
-        tf_numeric_feature: tf feature column representation of the input field
-    '''
-    print(f'### {col}: #mean/std: {MEAN}/{STD}, numeric (normalized)')
-    normalizer = functools.partial(normalize_numericals, mean=MEAN, std=STD)
-    tf_numerical_feat = tf.feature_column.numeric_column(key=col, 
-                    default_value = default_value, normalizer_fn=normalizer, 
-                                            dtype=tf.float64)
-    return tf_numerical_feat
-
-def calculate_train_stats(df, col):
-    """
-    This function takes in a dataframe and a column.  It returns
-    the mean and std deviation of the column.
-    """
-    mean = df[col].describe()['mean']
-    std = df[col].describe()['std']
-    return mean, std
-
-def create_tf_numerical_feat_columns(numerical_cols, train_dataframe):
-    """
-    This function takes a list of numerical columns and the training
-    dataset.  It usese the mean and std deviation of each column and 
-    creates Tensorflow numerical features.
-    It returns those features in an array.
-    """
-    tf_num_list = []
-    for num in numerical_cols:
-        mean, std = calculate_train_stats(train_dataframe, num)
-        tf_num_feat = create_tf_numerical_feats(num, mean, std)
-        tf_num_list.append(tf_num_feat)
-    return tf_num_list
-
-'''
-Adapted from Tensorflow Probability Regression tutorial  https://github.com/tensorflow/probability/blob/master/tensorflow_probability/examples/jupyter_notebooks/Probabilistic_Layers_Regression.ipynb    
-'''
-def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
-    n = kernel_size + bias_size
-    c = np.log(np.expm1(1.))
-    return tf.keras.Sequential([
-        tfp.layers.VariableLayer(2*n, dtype=dtype),
-        tfp.layers.DistributionLambda(lambda t: tfp.distributions.Independent(
-            tfp.distributions.Normal(loc=t[..., :n],
-                                     scale=1e-5 + tf.nn.softplus(c + t[..., n:])),
-            reinterpreted_batch_ndims=1)),
-    ])
-
-
-def prior_trainable(kernel_size, bias_size=0, dtype=None):
-    n = kernel_size + bias_size
-    return tf.keras.Sequential([
-        tfp.layers.VariableLayer(n, dtype=dtype),
-        tfp.layers.DistributionLambda(lambda t: tfp.distributions.Independent(
-            tfp.distributions.Normal(loc=t, scale=1),
-            reinterpreted_batch_ndims=1)),
-    ])
-
-def build_sequential_model(feature_layer):
-    model = tf.keras.Sequential([
-        feature_layer,
-        tf.keras.layers.Dense(150, activation='relu'),
-        tf.keras.layers.Dense(75, activation='relu'),
-        tfp.layers.DenseVariational(1+1, posterior_mean_field, 
-                                    prior_trainable),
-        tfp.layers.DistributionLambda(
-            lambda t:tfp.distributions.Normal(loc=t[..., :1],
-                    scale=1e-3 + tf.math.softplus(0.01 * t[...,1:]))),])
-    return model
-
-def build_model(train_dataset, val_dataset, feature_layer, epochs=5, 
-                                                         loss_metric='mse'):
-    model = build_sequential_model(feature_layer)
-    model.compile(optimizer='rmsprop', loss=loss_metric, metrics=[loss_metric])
-    early_stop = tf.keras.callbacks.EarlyStopping(monitor=loss_metric, patience=3)     
-    history = model.fit(train_dataset, validation_data=val_dataset,
-                        callbacks=[early_stop],
-                        epochs=epochs)
-    return model, history 
-
-def get_mean_std_from_preds(diabetes_yhat):
-    '''
-    This function takes in a TF Probability prediction object and returns 
-    the mean and std dev of the predictions.
-    '''
-    m = diabetes_yhat.mean()
-    s = diabetes_yhat.stddev()
-    return m, s
-
-def get_binary_prediction(df, col):
-    '''
-    This function takes in a predication dataframe and a 
-    probability mean prediction column.  It returns
-    flattened numpy array of binary labels.
-    '''
-    binary_prediction = df[col].apply(lambda x: 1 if x >= 5 else 0).values
-    print(f'# Transformed to numpy: {type(binary_prediction)}')
-    print(f'Shape: {binary_prediction.shape}')
-    return binary_prediction
-
-def add_predictions(df_test, pred_np, demo_col_list, TARGET):
-    for cat in demo_col_list:
-        df_test[cat] = df_test[cat].astype(str)
-    df_test['score'] = pred_np
-    df_test['label_value'] = df_test[TARGET].apply(lambda x: 1 if x >=5 else 0)
-    return df_test
 
