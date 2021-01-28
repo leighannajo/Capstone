@@ -18,6 +18,9 @@ warnings.filterwarnings('ignore')
 
 
 def test_level(df, encounter='encounter_id', patient='patient_nbr'):
+    """ This function takes in a dataframe, and two identifying features 
+    it tests the level of the patient data and returns a sentence clarifying 
+    the level"""
     if len(df) > df['encounter_id'].nunique():
         print("Dataset is probably at the line level.")
     elif len(df) == df['encounter_id'].nunique():
@@ -27,9 +30,13 @@ def test_level(df, encounter='encounter_id', patient='patient_nbr'):
     else:
         print('You did not provide the correct information!')
         
-def plot_PCA_2D(data, target, target_labels, y_colors):
+def plot_PCA_2D(data, target, target_labels, y_colors, n_components=2):
+    """ This function takes in a dataframe, target feature, 
+    feature 
+    
+    """
 
-    pca = decomposition.PCA(n_components=2)
+    pca = decomposition.PCA(n_components=n_components)
     pca.fit(data)
     pcafeatures = pca.transform(data)
     
@@ -41,6 +48,29 @@ def plot_PCA_2D(data, target, target_labels, y_colors):
     ylabel("2nd pricinple component")
     plt.legend()
     plt.show()
+    return pca
+
+
+def two_plot_PCA_2D(data, target, n_components=2):
+    """ This function takes in a dataframe, target feature, 
+    feature 
+    
+    """
+
+    pca = decomposition.PCA(n_components=n_components)
+    pca.fit(data)
+    pcafeatures = pca.transform(data)
+    
+    
+    plt.scatter(pcafeatures[:,0], pcafeatures[:, 1],
+                   alpha=.3, edgecolors="none", c='purple')
+
+    plt.xlabel("1st pricinple component")
+    plt.ylabel("2nd pricinple component")
+    plt.legend()
+    plt.show()
+    return pca
+
 
 def missing_data(df):
     """ This function takes in a dataframe, calculates
@@ -54,6 +84,10 @@ def missing_data(df):
     return new.loc[new['Percent']>0]
 
 def get_null_get_cardinality(df, categorical_columns):
+    """ This function takes in a dataframe and a categorical column list.
+    It creates lists for various values and checks for missing, null or 
+    placeholder values in each categorical column listed.  It appends the values found
+    to this lists and returns dataframes for each """
     col_name = []
     total_unique = []
     placeholders = []
@@ -195,6 +229,7 @@ def model_test(model, X_train, y_train, X_test, y_test):
 
 def get_model_performance(predictions, color, X_test, y_test,
                 target_names = ['Not Readmitted', 'Readmitted']):
+    conf_matrix_nums = confusion_matrix(y_test, predictions)
     cfm = confusion_matrix(y_test, predictions, normalize='true')
     clr = classification_report(y_test, predictions, target_names=target_names) 
 #                     target_names = ['Not Readmitted', '< 30 days',  '> 30 days']
@@ -211,7 +246,8 @@ def get_model_performance(predictions, color, X_test, y_test,
     f1 = f1_score(y_test, predictions, average='macro')
     accuracy = accuracy_score(y_test, predictions)
     
-    print(f'Confusion Matrix: \n', cfm, '\n')
+    print(f'Confusion Matrix: \n', conf_matrix_nums, '\n')
+    
     print(f'Classification Report: \n', clr, '\n')
     
     print(f'True Negative: {true_negative}')
