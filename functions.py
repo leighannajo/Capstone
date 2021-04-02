@@ -16,11 +16,16 @@ from sklearn.metrics import precision_score, make_scorer, roc_auc_score
 import warnings
 warnings.filterwarnings('ignore')
 
-
 def test_level(df, encounter='encounter_id', patient='patient_nbr'):
-    """ This function takes in a dataframe, and two identifying features 
-    it tests the level of the patient data and returns a sentence clarifying 
-    the level"""
+    """[Tests the level of the patient data.  
+        Prints a string describing the level.]
+
+    Args:
+        df ([dataframe]): [patient data]
+        encounter (str, optional): [integer]. Defaults to 'encounter_id'.
+        patient (str, optional): [integer]. Defaults to 'patient_nbr'.
+    """
+    
     if len(df) > df['encounter_id'].nunique():
         print("Dataset is probably at the line level.")
     elif len(df) == df['encounter_id'].nunique():
@@ -229,6 +234,19 @@ def model_test(model, X_train, y_train, X_test, y_test):
 
 def get_model_performance(predictions, color, X_test, y_test,
                 target_names = ['Not Readmitted', 'Readmitted']):
+    """[summary]
+        
+    Args:
+        predictions ([type]): [description]
+        color ([type]): [description]
+        X_test ([type]): [description]
+        y_test ([type]): [description]
+        target_names (list, optional): [description]. Defaults to ['Not Readmitted', 'Readmitted']
+
+    Returns:
+
+    >> run_code()
+    """
     conf_matrix_nums = confusion_matrix(y_test, predictions)
     cfm = confusion_matrix(y_test, predictions, normalize='true')
     clr = classification_report(y_test, predictions, target_names=target_names) 
