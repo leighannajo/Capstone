@@ -25,9 +25,6 @@ def test_level(df, encounter='encounter_id', patient='patient_nbr'):
         df ([dataframe]): [patient data]
         encounter (str, optional): [integer]. Defaults to 'encounter_id'.
         patient (str, optional): [integer]. Defaults to 'patient_nbr'.
-    
-    Examples:
-        test_level(df, encounter, patient)
     """
     
     if len(df) > df['encounter_id'].nunique():
@@ -40,9 +37,17 @@ def test_level(df, encounter='encounter_id', patient='patient_nbr'):
         print('You did not provide the correct information!')
         
 def plot_PCA_2D(data, target, target_labels, y_colors, n_components=2):
-    """ This function takes in a dataframe, target feature, 
-    feature 
-    
+    """[summary]
+
+    Args:
+        data ([dataframe]): []
+        target ([type]): [feature column]
+        target_labels ([type]): [description]
+        y_colors ([type]): [description]
+        n_components (int, optional): [description]. Defaults to 2.
+
+    Returns:
+        [type]: [description]
     """
 
     pca = decomposition.PCA(n_components=n_components)
@@ -82,9 +87,10 @@ def two_plot_PCA_2D(data, target, n_components=2):
 
 
 def missing_data(df):
-    """ This function takes in a dataframe, calculates
-    the total missing values and the percentage of missing
-    values per column and returns a new dataframe.
+    """[Calculates total count of and percentage of null values.]
+
+    Returns:
+        [dataframe]: [Columns of null count and percentage null.]
     """
     new = pd.DataFrame()
     total = df.isnull().sum().sort_values(ascending = False)
