@@ -17,13 +17,17 @@ import warnings
 warnings.filterwarnings('ignore')
 
 def test_level(df, encounter='encounter_id', patient='patient_nbr'):
-    """[Tests the level of the patient data.  
+    """[Tests the level of the patient data by checking the 
+        unique values of the given columns.  
         Prints a string describing the level.]
 
     Args:
         df ([dataframe]): [patient data]
         encounter (str, optional): [integer]. Defaults to 'encounter_id'.
         patient (str, optional): [integer]. Defaults to 'patient_nbr'.
+    
+    Examples:
+        test_level(df, encounter, patient)
     """
     
     if len(df) > df['encounter_id'].nunique():
