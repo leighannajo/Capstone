@@ -103,6 +103,11 @@ def get_null_get_cardinality(df, categorical_columns):
     It creates lists for various values and checks for missing, null or 
     placeholder values in each categorical column listed.  It appends the values found
     to this lists and returns dataframes for each """
+    """[summary]
+
+    Returns:
+        [type]: [description]
+    """
     col_name = []
     total_unique = []
     placeholders = []
