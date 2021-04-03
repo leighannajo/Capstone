@@ -85,13 +85,15 @@ def two_plot_PCA_2D(data, target, n_components=2):
     plt.show()
     return pca
 
+    """def missing_data(df):
+        """[Calculates total count of and percentage of null values.]
 
-def missing_data(df):
-    """[Calculates total count of and percentage of null values.]
+        Args:
+            df ([dataframe]): [description]
 
-    Returns:
-        [dataframe]: [Columns of null count and percentage null.]
-    """
+        Returns:
+            [dataframe]: [Columns of null count and percentage null.]
+        """
     new = pd.DataFrame()
     total = df.isnull().sum().sort_values(ascending = False)
     percent = (df.isnull().mean()*100).sort_values(ascending = False)
@@ -99,12 +101,13 @@ def missing_data(df):
     return new.loc[new['Percent']>0]
 
 
-"" This function takes in a dataframe and a categorical column list.
-    It creates lists for various values and checks for missing, null or 
-    placeholder values in each categorical column listed.  It appends the values found
-    to this lists and returns dataframes for each """
+
 def get_null_get_cardinality(df, categorical_columns):
     """[summary]
+    This function takes in a dataframe and a categorical column list.
+    It creates lists for various values and checks for missing, null or 
+    placeholder values in each categorical column listed.  It appends the values found
+    to this lists and returns dataframes for each
 
     Args:
         df ([type]): [description]
