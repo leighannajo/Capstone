@@ -98,16 +98,22 @@ def missing_data(df):
     new = pd.concat([total, percent], axis=1, keys=['Total', 'Percent'])
     return new.loc[new['Percent']>0]
 
-def get_null_get_cardinality(df, categorical_columns):
-    """ This function takes in a dataframe and a categorical column list.
+
+"" This function takes in a dataframe and a categorical column list.
     It creates lists for various values and checks for missing, null or 
     placeholder values in each categorical column listed.  It appends the values found
     to this lists and returns dataframes for each """
+def get_null_get_cardinality(df, categorical_columns):
     """[summary]
+
+    Args:
+        df ([type]): [description]
+        categorical_columns ([type]): [description]
 
     Returns:
         [type]: [description]
     """
+    
     col_name = []
     total_unique = []
     placeholders = []
