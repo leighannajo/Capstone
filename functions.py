@@ -110,8 +110,8 @@ def get_null_get_cardinality(df, categorical_columns):
     to this lists and returns dataframes for each
 
     Args:
-        df ([type]): [description]
-        categorical_columns ([type]): [description]
+        df ([dataframe]): [Pandas dataframe]
+        categorical_columns ([categorical]): [categorical]
 
     Returns:
         [type]: [description]
