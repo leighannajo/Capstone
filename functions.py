@@ -85,7 +85,7 @@ def two_plot_PCA_2D(data, target, n_components=2):
     plt.show()
     return pca
 
-    """def missing_data(df):
+    def missing_data(df):
         """[Calculates total count of and percentage of null values.]
 
         Args:
