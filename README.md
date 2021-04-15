@@ -134,6 +134,7 @@ Using Aequitas to Check for Biases:
 - To check for significant bias in the model cross race and gender:
 - Plot metrics that are important for patient selection (with race and gender).
 - Check for significant bias in the model across any of the groups.
+- Check for bias across diagnoses.
 
 <img src=images/Picture1.png style="width:80%">
 
