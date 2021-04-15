@@ -124,7 +124,7 @@ Limitations and biases are difficult to avoid with medical data, so being aware 
 How can we account for these biases with future work?
 
 - Collect more data: time between discharge and readmission.
-- Collect more demographics across larger regions.
+- Collect more demographics across larger regions, such as more representative patient samples.
 - Collect cardiac subset diagnoses.
 
 
