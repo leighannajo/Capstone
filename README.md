@@ -136,7 +136,7 @@ Using Aequitas to Check for Biases:
 - Check for significant bias in the model across any of the groups.
 - Check for bias across diagnoses.
 
-<img src=images/Picture1.png style="width:80%">
+<img src=images/Picture1.png style="width:70%">
 
 
 
