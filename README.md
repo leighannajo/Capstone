@@ -153,3 +153,5 @@ They have been labeled and organized for your reading pleasure!
 <a href= https://youtu.be/Ihog__Rp1to >Project Presentation Video Blog</a>
 
 <a href= https://leighannajohooper.medium.com/predicting-hospital-readmissions-part-1-af5ca97753cb >Project Presentation Blog</a>
+
+<a href= https://leighannajohooper.medium.com/prior-learning-experience-part-1-f8320b0bddaa >Demonstrating Prior Learning</a>
