@@ -131,7 +131,7 @@ How can we account for these biases with future work?
 ## Appendix:
 Using Aequitas to Check for Biases:
 ** notes for here
-** notes for here
+
 
 
 - To check for significant bias in the model cross race and gender:
